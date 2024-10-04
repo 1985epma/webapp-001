@@ -25,7 +25,7 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: earaujo  # Referencia o segredo de usuário
+          username: ${{ secrets.DOCKER_USERNAME }}  # Referencia o segredo de usuário
           password: ${{ secrets.DOCKER_PASSWORD }}  # Referencia o segredo de senha
 
       # Build da imagem Docker
@@ -33,4 +33,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: earaujo/web-app001  # Substitua pelo seu Docker ID e repositório
+          tags: earaujo/web-app001  # Substitua pelo seu Docker ID e repositórios
