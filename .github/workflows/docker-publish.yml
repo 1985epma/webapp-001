@@ -1,9 +1,9 @@
-name: CI - Build and Push Docker Image
+name: CI - Build, SAST (Bandit) and Push Docker Image
 
 on:
   push:
     branches:
-      - main  # Executa o CI/CD quando houver um push na branch main
+      - main
   pull_request:
     branches:
       - main
@@ -13,24 +13,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Verifica o repositório GitHub
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Configura o Docker para rodar o build
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Configura o Docker para rodar no CI
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}  # Referencia o segredo de usuário
-          password: ${{ secrets.DOCKER_PASSWORD }}  # Referencia o segredo de senha
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build da imagem Docker
+      # Executar a análise de segurança com Bandit antes de fazer o build
+      - name: Run SAST with Bandit
+        run: |
+          pip3 install bandit
+          bandit -r . --exit-zero  # Remove --exit-zero se você quiser que o build falhe ao encontrar vulnerabilidades
+
+      # Build e push da imagem Docker
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v3
         with:
+          context: .
+          file: ./Dockerfile
           push: true
-          tags: earaujo/web-app001  # Substitua pelo seu Docker ID e repositórios
+          tags: earaujo/web-app001:latest
