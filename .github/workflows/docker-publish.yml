@@ -16,6 +16,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up Python environment
+        run: |
+          sudo apt-get install python3-venv
+          python3 -m venv venv
+          source venv/bin/activate
+
+      - name: Install Bandit
+        run: |
+          venv/bin/pip install bandit
+
+      # Executar a análise de segurança com Bandit
+      - name: Run SAST with Bandit
+        run: |
+          venv/bin/bandit -r . --exit-zero  # Remove --exit-zero se você quiser que o build falhe ao encontrar vulnerabilidades
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -25,13 +40,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Executar a análise de segurança com Bandit antes de fazer o build
-      - name: Run SAST with Bandit
-        run: |
-          pip3 install bandit
-          bandit -r . --exit-zero  # Remove --exit-zero se você quiser que o build falhe ao encontrar vulnerabilidades
-
-      # Build e push da imagem Docker
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
